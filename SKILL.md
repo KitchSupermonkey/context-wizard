@@ -222,7 +222,7 @@ When the user asks an **open-ended question** without specifying a project (e.g.
 2. **Context ≠ Project Management**: Schema uses generic fields (文档类型/核心结论/关键时间/涉及人员/标签) — NOT project fields (风险/进度/预算/优先级). Any doc type (meeting notes, requirements, reports, agreements) fits this schema.
 3. **Project vs Entity Name**: Table names are project-level (e.g., "context-wizard"), not document-level. Multiple docs from same project accumulate in one table as separate records.
 4. **关联文档 Auto-fill**: `write_context.py` auto-generates Feishu doc URLs from `doc_token`. Only skips if token is "N/A" or starts with "TEST_".
-5. **Record Updates**: `lark-cli base +record-upsert` without `--record-id` always creates new records. Use `+record-batch-update` with `' {"record_id_list":[...],"patch":{...}}'` for updates.
+5. **Record Updates**: `lark-cli base +record-upsert` without `--record-id` always creates new records. Use `+record-batch-update` with `'{"record_id_list":[...],"patch":{...}}'` for updates.
 6. **lark-cli field-create**: Use `--json '{"name":"X","type":"text"}'` — do NOT include `ui_type` or `property` keys (API rejects them).
 7. **Field Name Matching**: JSON keys in `record-upsert` must exactly match field names in the table. Use `lark-cli base +field-list` to verify.
 8. **Dashboard Block Creation**: Must run serially with `time.sleep(1.5)` between each block to avoid QPS rate limits.
