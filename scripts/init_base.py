@@ -74,20 +74,8 @@ def run_init(base_name="业务上下文引擎", folder_token=None):
         cli.create_view(app_token, table_id, "项目看板", "kanban")
         cli.create_view(app_token, table_id, "画册视图", "gallery")
 
-        # Create Dashboard
-        print("📊 Creating project dashboard...")
-        dashboard_file = os.path.join(os.path.dirname(__file__), "create_dashboard.py")
-        result = subprocess.run(
-            ["python", dashboard_file, app_token, "业务上下文"],
-            capture_output=True, text=True,
-            encoding="utf-8", errors="replace", shell=(sys.platform == "win32")
-        )
-        if result.stdout:
-            print(result.stdout)
-        if result.stderr and "already exists" not in result.stderr.lower():
-            print(f"[WARN] {result.stderr.strip()}")
-
-        # Auto-generate config.json
+        # Auto-generate config.json before optional dashboard setup so a
+        # non-critical dashboard failure does not lose the created Base token.
         config_path = os.path.join(os.path.dirname(__file__), "config.json")
         with open(config_path, 'w') as f:
             json.dump({
@@ -96,6 +84,21 @@ def run_init(base_name="业务上下文引擎", folder_token=None):
                 "last_updated": __import__('datetime').datetime.now().strftime("%Y-%m-%d")
             }, f, indent=2, ensure_ascii=False)
         print(f"✅ config.json saved: {config_path}")
+
+        # Create Dashboard
+        print("📊 Creating project dashboard...")
+        dashboard_file = os.path.join(os.path.dirname(__file__), "create_dashboard.py")
+        result = subprocess.run(
+            [sys.executable, dashboard_file, app_token, "业务上下文"],
+            capture_output=True, text=True,
+            encoding="utf-8", errors="replace", shell=(sys.platform == "win32")
+        )
+        if result.stdout:
+            print(result.stdout)
+        if result.stderr and "already exists" not in result.stderr.lower():
+            print(f"[WARN] {result.stderr.strip()}")
+        if result.returncode != 0:
+            print("[WARN] Dashboard creation skipped (non-critical).")
 
         print("✨ Initialization Complete!")
         print(f"🔗 Base URL: https://your-tenant.feishu.cn/base/{app_token}")

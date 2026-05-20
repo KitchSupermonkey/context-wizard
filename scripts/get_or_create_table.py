@@ -33,12 +33,19 @@ def get_or_create_table(app_token, project_name, table_name=None):
     except Exception:
         tables = []
 
-    # 2. Find table — use partial matching so "超星项目" matches "超星甄选"
+    # 2. Find table. Prefer exact matches before partial matches so a broad
+    # project like "甄选" is not swallowed by "甄选625方案讨论会".
     for t in tables:
         table_name_actual = t.get("name", "")
-        if table_name == table_name_actual or table_name in table_name_actual or table_name_actual in table_name:
+        if table_name == table_name_actual:
             print(f"🔍 Found existing table: {table_name_actual} (ID: {t['id']})")
             return t["id"]
+    if len(table_name) >= 4:
+        for t in tables:
+            table_name_actual = t.get("name", "")
+            if table_name in table_name_actual or table_name_actual in table_name:
+                print(f"🔍 Found existing table: {table_name_actual} (ID: {t['id']})")
+                return t["id"]
 
     # 3. Create table if missing
     print(f"✨ Table not found. Creating new table: {table_name}...")
@@ -79,7 +86,7 @@ def get_or_create_table(app_token, project_name, table_name=None):
     import subprocess
     try:
         result = subprocess.run(
-            ["python", os.path.join(os.path.dirname(__file__), "create_dashboard.py"), app_token, table_name],
+            [sys.executable, os.path.join(os.path.dirname(__file__), "create_dashboard.py"), app_token, table_name],
             capture_output=True, text=True,
             encoding="utf-8", errors="replace", shell=(sys.platform == "win32")
         )
